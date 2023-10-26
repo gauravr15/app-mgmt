@@ -1,7 +1,13 @@
 package com.odin.orchestrator.appmgmt.utility;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+
+import javax.crypto.SecretKey;
 import javax.servlet.http.HttpServletRequest;
 
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -10,15 +16,27 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.odin.orchestrator.appmgmt.constants.ResponseCodes;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 public class Utility {
 
-	private final AESHelper aesHelper;
+	@Value("${jwt.secret}")
+	private String secret;
 
-	public Utility(AESHelper aesHelper) {
+	@Value("${jwt.issuer}")
+	private String issuer;
+
+	@Value("${jwt.validity}")
+	private Long expirationMillis;
+
+	private final ChecksumHelper aesHelper;
+
+	public Utility(ChecksumHelper aesHelper) {
 		this.aesHelper = aesHelper;
 	}
 
@@ -34,9 +52,9 @@ public class Utility {
 
 			String checksum = aesHelper.encrypt(requestBodyJSON);
 			if (checksum.equals(reqChecksum)) {
-				return new ResponseEntity<>(response.buildResponse(ResponseCodes.SUCCESS), HttpStatus.OK);
+				return new ResponseEntity<>(response.buildResponse(ResponseCodes.SUCCESS_CODE), HttpStatus.OK);
 			}
-			return new ResponseEntity<>(response.buildResponse(ResponseCodes.FAILURE), HttpStatus.OK);
+			return new ResponseEntity<>(response.buildResponse(ResponseCodes.FAILURE_CODE), HttpStatus.OK);
 		} catch (Exception e) {
 			log.error("Error occurred while validating checksum: {}", e.getMessage());
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -70,5 +88,20 @@ public class Utility {
 			log.error("Error occurred while validating checksum: {}", e.getMessage());
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	public ResponseEntity<Object> generateToken(String userId) {
+		Date now = new Date();
+		Date expiration = new Date(now.getTime() + expirationMillis);
+
+		SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+
+		JSONObject subObject = new JSONObject();
+		subObject.put("userId", userId);
+
+		String token = Jwts.builder().setSubject(subObject.toString()).setIssuer(issuer).setIssuedAt(now)
+				.setExpiration(expiration).signWith(key, SignatureAlgorithm.HS256).compact();
+		ResponseObject response = new ResponseObject();
+		return new ResponseEntity<>(response.buildResponse(token), HttpStatus.OK);
 	}
 }

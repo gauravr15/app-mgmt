@@ -75,6 +75,15 @@ public class ResponseObject {
         response.setData(data);
         return response;
     }
+    
+    public ResponseObject buildResponse(Integer statusCode) {
+        ResponseObject response = ResponseObject.builder().statusCode(statusCode).build();
+        if(statusCode >= ResponseCodes.SUCCESS_CODE)
+        	response.setStatus(ResponseCodes.SUCCESS);
+        else
+        	response.setStatus(ResponseCodes.FAILURE);
+        return response;
+    }
 
     private String getLanguageBasedMessage(Messages finalMessage, String lang) {
         switch (lang) {

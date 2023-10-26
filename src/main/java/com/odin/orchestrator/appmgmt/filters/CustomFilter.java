@@ -79,7 +79,6 @@ public class CustomFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(jwtToken) && jwtToken.startsWith("Bearer ")) {
             jwtToken = jwtToken.substring(7);
 
-            // Verify and decode JWT token
             try {
                 Claims claims = Jwts.parserBuilder()
                         .setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes()))
@@ -87,15 +86,9 @@ public class CustomFilter extends OncePerRequestFilter {
                         .parseClaimsJws(jwtToken)
                         .getBody();
 
-                // Extract user ID from the JWT claims
                 String userId = claims.getSubject();
-
-                // Add the userId to the response header
                 response.addHeader("userId", userId);
-
-                // Check if the request contains a checksum header
                 String checksum = request.getHeader("checksum");
-
                 if (validateChecksum && StringUtils.hasText(checksum)) {
                     // Validate the checksum
                     if (validateChecksum(request, checksum)) {

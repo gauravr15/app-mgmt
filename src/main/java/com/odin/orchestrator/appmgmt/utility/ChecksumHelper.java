@@ -6,45 +6,44 @@ import org.springframework.stereotype.Component;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.SecureRandom;
-import java.security.spec.KeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class AESHelper {
-    private static final String AES_ALGORITHM = "AES/CBC/PKCS5Padding";
-    private static final String SECRET_KEY_ALGORITHM = "PBKDF2WithHmacSHA256";
+public class ChecksumHelper {
 
-    private final String secret;
-    private final String salt;
-    private final int keySize;
-    private final int iterationCount;
-    
+    private static final String AES_ALGORITHM = "AES";
+    private static final String SECRET_KEY_ALGORITHM = "PBKDF2WithHmacSHA512";
+
+    @Value("${encryption.secretKey}")
+    private String secret;
+
+    @Value("${encryption.salt}")
+    private String salt;
+
+    @Value("${encryption.keySize}")
+    private int keySize;
+
+    @Value("${encryption.iterationCount}")
+    private int iterationCount;
+
     @Value("${encryption.iv}")
     private String iv;
 
-    public AESHelper(@Value("${encryption.secretKey}") String aesSecretKey,
-                     @Value("${encryption.salt}") String aesSalt,
-                     @Value("${encryption.keySize}") int aesKeySize,
-                     @Value("${encryption.iterationCount}") int aesIterationCount) {
-        this.secret = aesSecretKey;
-        this.salt = aesSalt;
-        this.keySize = aesKeySize;
-        this.iterationCount = aesIterationCount;
+    public ChecksumHelper() {
     }
 
     public String encrypt(String plaintext) {
         try {
             SecretKey secretKey = generateSecretKey();
             Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(Base64.getDecoder().decode(iv)));
-            byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes());
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(encryptedBytes);
         } catch (Exception e) {
             log.error("Error during encryption: {}", e.getMessage());
@@ -56,10 +55,10 @@ public class AESHelper {
         try {
             SecretKey secretKey = generateSecretKey();
             Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(Base64.getDecoder().decode(iv)));
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
             byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
             byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
-            return new String(decryptedBytes);
+            return new String(decryptedBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
             log.error("Error during decryption: {}", e.getMessage());
             return null;
@@ -69,8 +68,12 @@ public class AESHelper {
     private SecretKey generateSecretKey() {
         try {
             SecretKeyFactory factory = SecretKeyFactory.getInstance(SECRET_KEY_ALGORITHM);
-            KeySpec spec = new PBEKeySpec(secret.toCharArray(), salt.getBytes(), iterationCount, keySize);
+            char[] passwordChars = secret.toCharArray();
+            byte[] saltBytes = salt.getBytes(StandardCharsets.UTF_8);
+
+            PBEKeySpec spec = new PBEKeySpec(passwordChars, saltBytes, iterationCount, keySize);
             SecretKey secretKey = factory.generateSecret(spec);
+
             return new SecretKeySpec(secretKey.getEncoded(), "AES");
         } catch (Exception e) {
             log.error("Error during key generation: {}", e.getMessage());

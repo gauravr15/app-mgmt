@@ -39,18 +39,6 @@ public class TestController {
 	@Value("${jwt.validity}")
 	private Long jwtValidityMilli;
 
-	@Value("${encryption.secretKey}")
-	private String aesSecretKey;
-
-	@Value("${encryption.salt}")
-	private String aesSalt;
-
-	@Value("${encryption.keySize}")
-	private String keySize;
-
-	@Value("${encryption.iterationCount}")
-	private String iterationCount;
-
 	@Autowired
 	private Utility utility;
 
@@ -73,6 +61,15 @@ public class TestController {
 	public ResponseEntity<Object> createChecksum(@RequestBody TestDTO requestBody) {
 		try {
 			return utility.createChecksum(requestBody);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@PostMapping("/getAuthToken")
+	public ResponseEntity<Object> generateAuthToken(HttpServletRequest req) {
+		try {
+			return utility.generateToken(req.getHeader("userId"));
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
