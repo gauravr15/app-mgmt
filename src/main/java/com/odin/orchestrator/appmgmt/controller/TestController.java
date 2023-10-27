@@ -23,9 +23,7 @@ import com.odin.orchestrator.appmgmt.utility.Utility;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @RestController
 @RequestMapping(ApplicationConstants.API_VERSION)
 public class TestController {
@@ -41,10 +39,12 @@ public class TestController {
 
 	@Autowired
 	private Utility utility;
+	
+	@Autowired
+	private ResponseObject response;
 
 	@PostMapping(value = "/createToken")
 	public ResponseEntity<Object> getToken(HttpServletRequest req, @RequestBody String userId) {
-		ResponseObject response = new ResponseObject();
 		String secretKeyString = jwtSecret;
 		byte[] secretKeyBytes = Base64.getDecoder().decode(secretKeyString);
 		SecretKey secretKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS256.getJcaName());

@@ -22,13 +22,13 @@ public class AppVersionModel {
 	private Long id;
 	
 	@Column(name = "ENVIRONMENT")
-	private String env;
+	private String environment;
 
 	@Column(name = "VERSION")
 	private String version;
 	
-	@Column(name = "IS_USABLE")
-	private boolean isUseable;
+	@Column(name = "IS_MANDATORY")
+	private boolean isMandatory;
 	
 	@CreationTimestamp
 	@Column(name = "CREATION_TIMESTAMP")

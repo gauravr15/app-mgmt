@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import com.odin.orchestrator.appmgmt.constants.ApplicationConstants;
 import com.odin.orchestrator.appmgmt.constants.ResponseCodes;
@@ -27,9 +26,11 @@ public class APIMetadataServiceImpl implements APIMetadataService{
 	@Autowired
 	private APIInfoRepository apiInfoRepo;
 	
+	@Autowired
+	private ResponseObject response;
+	
 	@Override
 	public ResponseEntity<Object> getAPIInfo(HttpServletRequest request){
-		ResponseObject response = new ResponseObject();
 		try {
 		String env = request.getHeader(ApplicationConstants.ENVIRONMENT);
 		String requestId = request.getHeader(ApplicationConstants.REQUEST_ID);

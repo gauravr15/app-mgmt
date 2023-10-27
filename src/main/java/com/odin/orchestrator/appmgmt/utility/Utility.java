@@ -7,10 +7,12 @@ import javax.crypto.SecretKey;
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +36,9 @@ public class Utility {
 	@Value("${jwt.validity}")
 	private Long expirationMillis;
 
+	@Autowired
+	private ResponseObject response;
+	
 	private final ChecksumHelper aesHelper;
 
 	public Utility(ChecksumHelper aesHelper) {
@@ -46,7 +51,6 @@ public class Utility {
 
 	public ResponseEntity<Object> validateChecksum(Object requestBody, String reqChecksum) {
 		try {
-			ResponseObject response = new ResponseObject();
 
 			String requestBodyJSON = Utility.serializeObjectWithSpaces(requestBody);
 
@@ -78,7 +82,6 @@ public class Utility {
 
 	public ResponseEntity<Object> createChecksum(Object requestBody) {
 		try {
-			ResponseObject response = new ResponseObject();
 
 			String requestBodyJSON = Utility.serializeObjectWithSpaces(requestBody);
 
@@ -101,7 +104,19 @@ public class Utility {
 
 		String token = Jwts.builder().setSubject(subObject.toString()).setIssuer(issuer).setIssuedAt(now)
 				.setExpiration(expiration).signWith(key, SignatureAlgorithm.HS256).compact();
-		ResponseObject response = new ResponseObject();
 		return new ResponseEntity<>(response.buildResponse(token), HttpStatus.OK);
+	}
+
+	public static Double getAppVersion(HttpServletRequest request) {
+		return Double.valueOf(
+				ObjectUtils.isEmpty(request.getHeader("appVersion")) ? "0.0" : request.getHeader("appVersion"));
+	}
+	
+	public static String getEnvironment(HttpServletRequest req) {
+		return req.getHeader("env");
+	}
+	
+	public static String getLanguage(HttpServletRequest req) {
+		return req.getHeader("lang");
 	}
 }
