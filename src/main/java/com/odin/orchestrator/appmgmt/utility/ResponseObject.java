@@ -118,6 +118,7 @@ public class ResponseObject {
 
 			response.setStatus(
 					statusCode >= ResponseCodes.SUCCESS_CODE ? ResponseCodes.SUCCESS : ResponseCodes.FAILURE);
+			response.setData(data);
 			return response;
 		} catch (Exception e) {
 			log.error("Error occurred: {}", e.getMessage());

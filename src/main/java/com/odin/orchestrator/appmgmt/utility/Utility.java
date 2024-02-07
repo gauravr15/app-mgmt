@@ -39,9 +39,9 @@ public class Utility {
 	@Autowired
 	private ResponseObject response;
 	
-	private final ChecksumHelper aesHelper;
+	private final AESHelper aesHelper;
 
-	public Utility(ChecksumHelper aesHelper) {
+	public Utility(AESHelper aesHelper) {
 		this.aesHelper = aesHelper;
 	}
 

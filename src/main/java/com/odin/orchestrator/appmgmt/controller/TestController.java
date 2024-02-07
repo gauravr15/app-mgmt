@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.odin.orchestrator.appmgmt.constants.ApplicationConstants;
 import com.odin.orchestrator.appmgmt.dto.TestDTO;
+import com.odin.orchestrator.appmgmt.utility.AESHelper;
 import com.odin.orchestrator.appmgmt.utility.ResponseObject;
 import com.odin.orchestrator.appmgmt.utility.Utility;
 
@@ -42,6 +43,9 @@ public class TestController {
 	
 	@Autowired
 	private ResponseObject response;
+	
+	@Autowired
+	private AESHelper aesHelper;
 
 	@PostMapping(value = "/createToken")
 	public ResponseEntity<Object> getToken(HttpServletRequest req, @RequestBody String userId) {
@@ -61,6 +65,15 @@ public class TestController {
 	public ResponseEntity<Object> createChecksum(@RequestBody TestDTO requestBody) {
 		try {
 			return utility.createChecksum(requestBody);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@PostMapping("/decode")
+	public ResponseEntity<Object> decode(@RequestBody TestDTO requestBody) {
+		try {
+			return new ResponseEntity<>(aesHelper.decrypt(requestBody.getName()),HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}

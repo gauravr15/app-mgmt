@@ -43,6 +43,7 @@ public class AESHelper {
         try {
             SecretKey secretKey = generateSecretKey();
             Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+            log.info(String.valueOf(Base64.getDecoder().decode(iv).length));
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(Base64.getDecoder().decode(iv)));
             byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes());
             return Base64.getEncoder().encodeToString(encryptedBytes);
@@ -56,6 +57,8 @@ public class AESHelper {
         try {
             SecretKey secretKey = generateSecretKey();
             Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+            log.info("Key: " + Base64.getEncoder().encodeToString(secretKey.getEncoded()));
+            log.info("IV: " + iv);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(Base64.getDecoder().decode(iv)));
             byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
             byte[] decryptedBytes = cipher.doFinal(encryptedBytes);

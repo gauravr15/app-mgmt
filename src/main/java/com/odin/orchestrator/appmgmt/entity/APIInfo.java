@@ -38,6 +38,9 @@ public class APIInfo {
 	@Column(name= "URI")
 	private String uri;
 	
+	@Column(name= "APP_VERSION")
+	private String appVersion;
+	
 	@CreationTimestamp
 	@Column(name = "CREATED_TIMESTAMP")
 	private Timestamp createdTime;

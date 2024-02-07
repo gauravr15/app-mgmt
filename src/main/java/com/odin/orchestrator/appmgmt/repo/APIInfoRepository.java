@@ -12,4 +12,7 @@ public interface APIInfoRepository extends JpaRepository<APIInfo, Long>{
 
 	List<APIInfo> findByEnvironmentIgnoreCase(String env);
 
+	List<APIInfo> findAllByEnvironmentIgnoreCaseAndAppVersionGreaterThanEqual(String environment, String valueOf);
+
+
 }
